@@ -1,0 +1,5 @@
+inspire
+xml
+*.log
+shadowrun-chargen/target/
+shadowrun-common/target
