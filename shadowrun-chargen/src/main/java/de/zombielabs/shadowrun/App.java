@@ -87,7 +87,7 @@ public class App implements DataProviderListener {
     
     
     public void loadData() throws SQLException {
-        this.data = new V5SQLDataProvider(new File("test.db"));
+        this.data = new V5SQLDataProvider(new File("C:\\Users\\steps\\test.db"));
         this.data.addListener(this);
         this.data.loadAll();
     }

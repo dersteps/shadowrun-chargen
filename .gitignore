@@ -3,3 +3,5 @@ xml
 *.log
 shadowrun-chargen/target/
 shadowrun-common/target
+*.DB
+thumbs.db
