@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package de.zombielabs.shadowrun.forms.data;
 
 import de.zombielabs.shadowrun.common.data.Priority;
@@ -201,4 +195,19 @@ public class PriorityMagicComboBoxItem extends PriorityComboBoxItem  {
         
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) { return false; }
+        if(!(obj instanceof PriorityMagicComboBoxItem)) { return false; }
+        final PriorityMagicComboBoxItem item = (PriorityMagicComboBoxItem)obj;
+        return item.toString().equals(this.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode(); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
 }

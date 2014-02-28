@@ -52,8 +52,6 @@ public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
         final PriorityMetatypeComboBoxItem that = (PriorityMetatypeComboBoxItem)obj;
         if(that.toString() == null && this.toString() != null) { return false; }
         if(this.toString() == null && that.toString() != null) { return false; }
-        System.out.println("Comparing meta item " + this.toString() + " to " + that.toString());
-        System.out.println("Is same: " + this.toString().equals(that.toString()));
         return this.toString().equals(that.toString());
     }
 }

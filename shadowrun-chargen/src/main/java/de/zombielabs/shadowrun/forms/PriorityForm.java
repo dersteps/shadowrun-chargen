@@ -19,13 +19,14 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.Timer;
 
 /**
- *
+ * The PriorityForm dialog enables the user to select the priorities he/she 
+ * wants to assign to his/her character's metatype, attributes and so forth.
+ * 
  * @author Steps
  */
-public class PriorityForm extends ZombieDialog {
+public class PriorityForm extends ZombieDialog implements ActionListener {
 
     private static final String KEY_HUMAN = "HUMAN";
     
@@ -36,6 +37,13 @@ public class PriorityForm extends ZombieDialog {
     private static final String KEY_DWARF = "DWARF";
     
     private static final String KEY_TROLL = "TROLL";
+    
+    ///TODO: load Strings from resource
+    private final EmptyComboBoxItem defaultAttributeItem = new EmptyComboBoxItem("--- Please select a priority for attributes ---");
+    private final EmptyComboBoxItem defaultMetaItem = new EmptyComboBoxItem("--- Please select a priortiy for the character's metatype ---");
+    private final EmptyComboBoxItem defaultMagicItem = new EmptyComboBoxItem("--- Please select a priority for magic/resonance ---");
+    private final EmptyComboBoxItem defaultSkillItem = new EmptyComboBoxItem("--- Please select a priority for the character's skills ---");
+    private final EmptyComboBoxItem defaultResourceItem = new EmptyComboBoxItem("--- Please select a priority for the character's resources ---");
     
     private PriorityAttributeComboBoxItem selectedAttributeItem;
     private PriorityMetatypeComboBoxItem selectedMetaItem;
@@ -63,18 +71,93 @@ public class PriorityForm extends ZombieDialog {
         return selectedResourceItem;
     }
 
-    private EmptyComboBoxItem defaultAttributeItem = new EmptyComboBoxItem("--- Please select a priority for attributes ---");
-    private EmptyComboBoxItem defaultMetaItem = new EmptyComboBoxItem("--- Please select a priortiy for the character's metatype ---");
-    private EmptyComboBoxItem defaultMagicItem = new EmptyComboBoxItem("--- Please select a priority for magic/resonance ---");
-    private EmptyComboBoxItem defaultSkillItem = new EmptyComboBoxItem("--- Please select a priority for the character's skills ---");
-    private EmptyComboBoxItem defaultResourceItem = new EmptyComboBoxItem("--- Please select a priority for the character's resources ---");
-    
-    private HashMap<JComboBox, Integer> selection = null;
-    
-    private boolean checkSelection(final JComboBox box) {
-        return box.getSelectedItem() != null && box.getSelectedItem() instanceof PriorityComboBoxItem;
+    public void setSelectedAttributeItem(PriorityAttributeComboBoxItem selectedAttributeItem) {
+        this.selectedAttributeItem = selectedAttributeItem;
+        this.cboAttributes.setSelectedItem(this.selectedAttributeItem == null ? 
+                this.defaultAttributeItem : this.selectedAttributeItem);
+        this.updateOKButton();
+    }
+
+    public void setSelectedMetaItem(PriorityMetatypeComboBoxItem selectedMetaItem) {
+        this.selectedMetaItem = selectedMetaItem;
+        this.cboMeta.setSelectedItem(this.selectedMetaItem == null ? 
+                this.defaultMetaItem : this.selectedMetaItem);
+        this.updateOKButton();
+    }
+
+    public void setSelectedMagicItem(PriorityMagicComboBoxItem selectedMagicItem) {
+        this.selectedMagicItem = selectedMagicItem;
+        this.cboMagic.setSelectedItem(this.selectedMagicItem == null ? 
+                this.defaultMagicItem : this.selectedMagicItem);
+        this.updateOKButton();
+    }
+
+    public void setSelectedSkillsItem(PrioritySkillComboBoxItem selectedSkillsItem) {
+        this.selectedSkillsItem = selectedSkillsItem;
+        this.cboSkills.setSelectedItem(this.selectedSkillsItem == null ? 
+                this.defaultSkillItem : this.selectedSkillsItem);
+        this.updateOKButton();
+    }
+
+    public void setSelectedResourceItem(PriorityResourceComboBoxItem selectedResourceItem) {
+        this.selectedResourceItem = selectedResourceItem;
+        this.cboResources.setSelectedItem(this.selectedResourceItem == null ? 
+                this.defaultResourceItem : this.selectedResourceItem);
+        this.updateOKButton();
     }
     
+    private void updateOKButton() {
+        JComboBox[] boxes = new JComboBox[]{
+            cboMeta, cboAttributes, cboMagic, cboSkills, cboResources
+        };
+
+        for (final JComboBox box : boxes) {
+            if (!checkSelection(box)) {
+                cmdOK.setEnabled(false);
+                return;
+            }
+        }
+
+        final List<String> prios = getSelectedPriorityNames(getSelectedItems());
+
+        for (int i = 0; i < prios.size(); i++) {
+            for (int j = 0; j < prios.size(); j++) {
+                if (i != j && prios.get(i).equalsIgnoreCase(prios.get(j))) {
+                    cmdOK.setEnabled(false);
+                    return;
+                }
+            }
+        }
+
+        cmdOK.setEnabled(true);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        this.updateOKButton();
+    }
+
+    /**
+     * Checks whether or not a single JComboBox selection is not null and an 
+     * instance of PriorityComboBoxItem. This information is later used to 
+     * ensure that the OK button is only enabled when the user has selected a 
+     * priority for each category.
+     * @param box The JComboBox to check
+     * @return True if the selected item of the box is not null and an instance 
+     * of PriorityComboBoxItem, false otherwise
+     */
+    private boolean checkSelection(final JComboBox box) {
+        return box.getSelectedItem() != null && 
+                box.getSelectedItem() instanceof PriorityComboBoxItem;
+    }
+    
+    /**
+     * Convenience method that creates a list of all selected items.
+     * This method will fail if there is a single box in the form that has no
+     * selection or the default item selected.
+     * @return A list of instances of PriorityComboBoxItems representing the 
+     * current selection.
+     */
     private List<PriorityComboBoxItem> getSelectedItems() {
         return new ArrayList<PriorityComboBoxItem>() {{
             add((PriorityComboBoxItem)cboMeta.getSelectedItem());
@@ -85,6 +168,12 @@ public class PriorityForm extends ZombieDialog {
         }};
     }
     
+    /**
+     * Pure convenience method that takes a list of PriorityComboBoxItem 
+     * instances and collects their names.
+     * @param list A List of all PriorityComboBoxItems to extract the names of
+     * @return A List of the names of the provided items
+     */
     private List<String> getSelectedPriorityNames(List<PriorityComboBoxItem> list) {
         List<String> ret = new ArrayList<String>();
         for(final PriorityComboBoxItem item : list) {
@@ -93,51 +182,22 @@ public class PriorityForm extends ZombieDialog {
         return ret;
     }
     
+    /**
+     * Initializes a new instance of the PriorityForm class.
+     * @param parent The parent window, is usually MainForm
+     * @param modal If true, the execution is passed to this dialog (should 
+     * always be true)
+     * @param data An instance of DataProvider that enables this form to load
+     * all data required.
+     */
     public PriorityForm(java.awt.Frame parent, boolean modal, DataProvider data) {
         super(parent, modal, data);
         initComponents();
         
-        this.selection = new HashMap<JComboBox, Integer>();
-
-        this.cboAttributes.setRenderer(new PriorityComboRenderer());
-        
         this.init();
         
-        Timer timer = new Timer(100, new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                // get all selections and determine ok button state from them
-                
-                JComboBox[] boxes = new JComboBox[] {
-                    cboMeta, cboAttributes, cboMagic, cboSkills, cboResources
-                };
-                
-                for(final JComboBox box : boxes) {
-                    if(!checkSelection(box)) {
-                        cmdOK.setEnabled(false);
-                        return;
-                    }
-                }
-                
-                final List<String> prios = getSelectedPriorityNames(getSelectedItems());
-                
-                for(int i=0; i<prios.size(); i++) {
-                    for(int j=0; j<prios.size(); j++) {
-                        if(i!=j && prios.get(i).equalsIgnoreCase(prios.get(j))) {
-                            cmdOK.setEnabled(false);
-                            return;
-                        }
-                    }
-                }
-                
-                cmdOK.setEnabled(true);
-            }
-        });
-        
-        timer.start();
+        this.cmdOK.setEnabled(false);
     }
-    
-    
     
     private void loadSkills() {
         DefaultComboBoxModel pm = new DefaultComboBoxModel();
@@ -209,6 +269,10 @@ public class PriorityForm extends ZombieDialog {
         this.cboMagic.setModel(modMagic);
     }
     
+    /**
+     * This needs improvement!
+     */
+    ///TODO: Improve
     private void loadMetatypes() {
         // Load metatypes into combos
         DefaultComboBoxModel modMeta = new DefaultComboBoxModel();
@@ -258,12 +322,6 @@ public class PriorityForm extends ZombieDialog {
         this.cboMeta.setModel(modMeta);
     }
     
-    private static final String TAKEN_META = "METATYPE";
-    private static final String TAKEN_ATTR = "ATTRIBUTES";
-    private static final String TAKEN_MAGIC = "MAGIC";
-    private static final String TAKEN_SKILLS = "SKILLS";
-    private static final String TAKEN_RESS = "RESOURCES";
-    
     private void init() {
         
         this.loadMetatypes();
@@ -277,17 +335,13 @@ public class PriorityForm extends ZombieDialog {
         this.lblSelectedMetatype.setText("<None yet>");
         this.lblSelectedResources.setText("<None yet>");
         this.lblSelectedSkills.setText("<None yet>");
-    
-//        for(final Entry<JComboBox, Integer> entry : this.selection.entrySet()) {
-//            if(entry.getKey() != null && entry.getValue() != null) {
-//                entry.getKey().setSelectedIndex(entry.getValue());
-//            }
-//        }
-
-//        this.jComboBox1.setSelectedItem(this.selectedMetaItem);
-//        this.cboAttributes.setSelectedItem(this.selectedMetaItem == null ? this.defaultMetaItem : this.selectedMetaItem);
-        
         this.displaySelectedMetatype();
+        
+        this.cboAttributes.addActionListener(this);
+        this.cboMagic.addActionListener(this);
+        this.cboMeta.addActionListener(this);
+        this.cboResources.addActionListener(this);
+        this.cboSkills.addActionListener(this);
         
         
         
@@ -1001,7 +1055,6 @@ public class PriorityForm extends ZombieDialog {
         }
         
         final PriorityMetatypeComboBoxItem item = (PriorityMetatypeComboBoxItem)sel;
-        this.selection.put(cboMeta, this.cboMeta.getSelectedIndex());
         this.selectedMetaItem = item;
         this.displaySelectedMetatype();
     }//GEN-LAST:event_cboMetaActionPerformed
