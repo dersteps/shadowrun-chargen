@@ -25,8 +25,11 @@ import de.zombielabs.shadowrun.forms.renderer.Category;
 import de.zombielabs.shadowrun.forms.renderer.EdgeFlawListRenderer;
 import de.zombielabs.shadowrun.forms.renderer.GearNode;
 import de.zombielabs.shadowrun.forms.renderer.GearTreeRenderer;
+import de.zombielabs.shadowrun.util.Util;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +38,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -80,6 +85,7 @@ public class MainForm extends javax.swing.JFrame {
      */
     public MainForm(Splash splash, DataProvider data) {
        initComponents();
+       this.jPanel3.setBackground(Util.blend(jPanel3.getBackground(), Color.red, 1f));
        this.disableForm();
        this.splash = splash;
        this.data = data;
@@ -224,6 +230,8 @@ public class MainForm extends javax.swing.JFrame {
         
     }
     
+
+    
     private void disableForm() {
         this.updateFormEnabled(false, null);
     }
@@ -263,6 +271,7 @@ public class MainForm extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
         splitMain = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
@@ -300,7 +309,7 @@ public class MainForm extends javax.swing.JFrame {
         lblMAG = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         lblRES = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
+        lblAttributePointsLeft = new javax.swing.JLabel();
         lblAttributes = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         lblSkills = new javax.swing.JLabel();
@@ -434,6 +443,17 @@ public class MainForm extends javax.swing.JFrame {
         });
         jToolBar1.add(jButton1);
 
+        jButton4.setText(bundle.getString("MainForm.jButton4.text")); // NOI18N
+        jButton4.setFocusable(false);
+        jButton4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(jButton4);
+
         splitMain.setDividerLocation(250);
 
         jLabel1.setText(bundle.getString("MainForm.jLabel1.text")); // NOI18N
@@ -521,7 +541,7 @@ public class MainForm extends javax.swing.JFrame {
         lblRES.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblRES.setText(bundle.getString("MainForm.lblRES.text")); // NOI18N
 
-        jLabel18.setText(bundle.getString("MainForm.jLabel18.text")); // NOI18N
+        lblAttributePointsLeft.setText(bundle.getString("MainForm.lblAttributePointsLeft.text")); // NOI18N
 
         lblAttributes.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblAttributes.setText(bundle.getString("MainForm.lblAttributes.text")); // NOI18N
@@ -575,7 +595,7 @@ public class MainForm extends javax.swing.JFrame {
                                 .addComponent(lblResources, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(lblAttributePointsLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jLabel19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -691,7 +711,7 @@ public class MainForm extends javax.swing.JFrame {
                     .addComponent(lblRES))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel18)
+                    .addComponent(lblAttributePointsLeft)
                     .addComponent(lblAttributes))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1569,12 +1589,19 @@ public class MainForm extends javax.swing.JFrame {
         edit.takeControl();
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+       
+        
+        
+    }//GEN-LAST:event_jButton4ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Charisma;
     private javax.swing.JLabel Intuition;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JFormattedTextField jFormattedTextField1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1585,7 +1612,6 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -1675,6 +1701,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextArea3;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JTree jTree1;
+    private javax.swing.JLabel lblAttributePointsLeft;
     private javax.swing.JLabel lblAttributes;
     private javax.swing.JLabel lblCHA;
     private javax.swing.JLabel lblCharINT;
