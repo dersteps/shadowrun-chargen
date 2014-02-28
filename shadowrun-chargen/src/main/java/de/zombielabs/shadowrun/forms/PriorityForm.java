@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package de.zombielabs.shadowrun.forms;
 
 import de.zombielabs.shadowrun.common.data.DataProvider;
@@ -12,17 +6,20 @@ import de.zombielabs.shadowrun.common.data.Priority;
 import de.zombielabs.shadowrun.forms.data.EmptyComboBoxItem;
 import de.zombielabs.shadowrun.forms.data.Mages;
 import de.zombielabs.shadowrun.forms.data.PriorityAttributeComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityComboBoxItem;
 import de.zombielabs.shadowrun.forms.data.PriorityMagicComboBoxItem;
-import de.zombielabs.shadowrun.forms.data.PriorityMagicComboBoxItem_OLD;
 import de.zombielabs.shadowrun.forms.data.PriorityMetatypeComboBoxItem;
-import de.zombielabs.shadowrun.forms.data.PriorityResourcelComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityResourceComboBoxItem;
 import de.zombielabs.shadowrun.forms.data.PrioritySkillComboBoxItem;
 import de.zombielabs.shadowrun.forms.renderer.PriorityComboRenderer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.Timer;
 
 /**
  *
@@ -40,15 +37,11 @@ public class PriorityForm extends ZombieDialog {
     
     private static final String KEY_TROLL = "TROLL";
     
-    private List<String> priosTaken = null;
-    
-    private HashMap<String, Priority> taken = null;
-    
     private PriorityAttributeComboBoxItem selectedAttributeItem;
     private PriorityMetatypeComboBoxItem selectedMetaItem;
     private PriorityMagicComboBoxItem selectedMagicItem;
     private PrioritySkillComboBoxItem selectedSkillsItem;
-    private PriorityResourcelComboBoxItem selectedResourceItem;
+    private PriorityResourceComboBoxItem selectedResourceItem;
 
     public PriorityAttributeComboBoxItem getSelectedAttributeItem() {
         return selectedAttributeItem;
@@ -66,7 +59,7 @@ public class PriorityForm extends ZombieDialog {
         return selectedSkillsItem;
     }
 
-    public PriorityResourcelComboBoxItem getSelectedResourceItem() {
+    public PriorityResourceComboBoxItem getSelectedResourceItem() {
         return selectedResourceItem;
     }
 
@@ -78,35 +71,79 @@ public class PriorityForm extends ZombieDialog {
     
     private HashMap<JComboBox, Integer> selection = null;
     
+    private boolean checkSelection(final JComboBox box) {
+        return box.getSelectedItem() != null && box.getSelectedItem() instanceof PriorityComboBoxItem;
+    }
+    
+    private List<PriorityComboBoxItem> getSelectedItems() {
+        return new ArrayList<PriorityComboBoxItem>() {{
+            add((PriorityComboBoxItem)cboMeta.getSelectedItem());
+            add((PriorityComboBoxItem)cboAttributes.getSelectedItem());
+            add((PriorityComboBoxItem)cboMagic.getSelectedItem());
+            add((PriorityComboBoxItem)cboSkills.getSelectedItem());
+            add((PriorityComboBoxItem)cboResources.getSelectedItem());
+        }};
+    }
+    
+    private List<String> getSelectedPriorityNames(List<PriorityComboBoxItem> list) {
+        List<String> ret = new ArrayList<String>();
+        for(final PriorityComboBoxItem item : list) {
+            ret.add(item.getPriority().getName());
+        }
+        return ret;
+    }
+    
     public PriorityForm(java.awt.Frame parent, boolean modal, DataProvider data) {
         super(parent, modal, data);
         initComponents();
         
-        if(this.taken == null) {
-            this.taken = new HashMap<String, Priority>() {{
-               put(TAKEN_META, null);
-               put(TAKEN_ATTR, null);
-               put(TAKEN_MAGIC, null);
-               put(TAKEN_SKILLS, null);
-               put(TAKEN_RESS, null);
-            }};
-        }
-        
         this.selection = new HashMap<JComboBox, Integer>();
-//        this.jComboBox1.setRenderer(new PriorityComboRenderer());
-//        this.cboAttributes.setRenderer(new PriorityComboRenderer());
+
+        this.cboAttributes.setRenderer(new PriorityComboRenderer());
+        
         this.init();
+        
+        Timer timer = new Timer(100, new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                // get all selections and determine ok button state from them
+                
+                JComboBox[] boxes = new JComboBox[] {
+                    cboMeta, cboAttributes, cboMagic, cboSkills, cboResources
+                };
+                
+                for(final JComboBox box : boxes) {
+                    if(!checkSelection(box)) {
+                        cmdOK.setEnabled(false);
+                        return;
+                    }
+                }
+                
+                final List<String> prios = getSelectedPriorityNames(getSelectedItems());
+                
+                for(int i=0; i<prios.size(); i++) {
+                    for(int j=0; j<prios.size(); j++) {
+                        if(i!=j && prios.get(i).equalsIgnoreCase(prios.get(j))) {
+                            cmdOK.setEnabled(false);
+                            return;
+                        }
+                    }
+                }
+                
+                cmdOK.setEnabled(true);
+            }
+        });
+        
+        timer.start();
     }
+    
+    
     
     private void loadSkills() {
         DefaultComboBoxModel pm = new DefaultComboBoxModel();
         
         pm.addElement(this.defaultSkillItem);
         for(final Priority prio : this.data.getPriorities()) {
-            if(this.isTaken(prio)) {
-                pm.addElement(new EmptyComboBoxItem("Priority " + prio.getName() + " is taken!"));
-                continue;
-            } 
             PrioritySkillComboBoxItem item = new PrioritySkillComboBoxItem(prio);
             pm.addElement(item);
         }
@@ -119,11 +156,7 @@ public class PriorityForm extends ZombieDialog {
         
         pm.addElement(this.defaultResourceItem);
         for(final Priority prio : this.data.getPriorities()) {
-            if(this.isTaken(prio)) {
-                pm.addElement(new EmptyComboBoxItem("Priority " + prio.getName() + " is taken!"));
-                continue;
-            } 
-            PriorityResourcelComboBoxItem item = new PriorityResourcelComboBoxItem(prio);
+            PriorityResourceComboBoxItem item = new PriorityResourceComboBoxItem(prio);
             pm.addElement(item);
         }
         
@@ -135,10 +168,6 @@ public class PriorityForm extends ZombieDialog {
         
         pm.addElement(this.defaultAttributeItem);
         for(final Priority prio : this.data.getPriorities()) {
-            if(this.isTaken(prio)) {
-                pm.addElement(new EmptyComboBoxItem("Priority " + prio.getName() + " is taken!"));
-                continue;
-            } 
             PriorityAttributeComboBoxItem item = new PriorityAttributeComboBoxItem(prio);
             pm.addElement(item);
         }
@@ -204,8 +233,7 @@ public class PriorityForm extends ZombieDialog {
         
         for(final Priority prio : this.data.getPriorities()) {
             
-            final boolean a = !this.isTaken(prio);
-            
+            final boolean a = true;
             if(prio.isHumanPossible()) {
                 modMeta.addElement(new PriorityMetatypeComboBoxItem(prio, metas.get(KEY_HUMAN), prio.getSpecialHuman(), a));
             }
@@ -227,7 +255,7 @@ public class PriorityForm extends ZombieDialog {
             }
         }
 
-        this.jComboBox1.setModel(modMeta);
+        this.cboMeta.setModel(modMeta);
     }
     
     private static final String TAKEN_META = "METATYPE";
@@ -235,19 +263,6 @@ public class PriorityForm extends ZombieDialog {
     private static final String TAKEN_MAGIC = "MAGIC";
     private static final String TAKEN_SKILLS = "SKILLS";
     private static final String TAKEN_RESS = "RESOURCES";
-    
-    private boolean isTaken(Priority p) {
-        for(final Entry<String, Priority> entry : this.taken.entrySet()) {
-            if(entry == null || entry.getValue() == null) { continue; }
-            if(entry.getValue().getName().equalsIgnoreCase(p.getName())) {
-                System.out.println("Priority is taken for " + entry.getKey());
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
     
     private void init() {
         
@@ -292,10 +307,10 @@ public class PriorityForm extends ZombieDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        cmdOK = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox();
+        cboMeta = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -378,17 +393,17 @@ public class PriorityForm extends ZombieDialog {
             }
         });
 
-        jButton2.setText(bundle.getString("PriorityForm.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        cmdOK.setText(bundle.getString("PriorityForm.cmdOK.text")); // NOI18N
+        cmdOK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                cmdOKActionPerformed(evt);
             }
         });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+        cboMeta.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cboMeta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
+                cboMetaActionPerformed(evt);
             }
         });
 
@@ -587,7 +602,7 @@ public class PriorityForm extends ZombieDialog {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cboMeta, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(0, 0, Short.MAX_VALUE))
@@ -600,7 +615,7 @@ public class PriorityForm extends ZombieDialog {
                 .addContainerGap()
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cboMeta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -881,7 +896,7 @@ public class PriorityForm extends ZombieDialog {
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cmdOK, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1)))
                 .addContainerGap())
@@ -897,7 +912,7 @@ public class PriorityForm extends ZombieDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(cmdOK))
                 .addContainerGap())
         );
 
@@ -977,23 +992,19 @@ public class PriorityForm extends ZombieDialog {
         }
     }
     
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        final Object sel = this.jComboBox1.getSelectedItem();
+    private void cboMetaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboMetaActionPerformed
+        final Object sel = this.cboMeta.getSelectedItem();
         if(sel == null || !(sel instanceof PriorityMetatypeComboBoxItem)) {
             this.selectedMetaItem = null;
             this.displaySelectedMetatype();
-            this.taken.put(TAKEN_META, null);
             return;
         }
         
         final PriorityMetatypeComboBoxItem item = (PriorityMetatypeComboBoxItem)sel;
-        this.selection.put(jComboBox1, this.jComboBox1.getSelectedIndex());
+        this.selection.put(cboMeta, this.cboMeta.getSelectedIndex());
         this.selectedMetaItem = item;
         this.displaySelectedMetatype();
-        
-        this.taken.put(TAKEN_META, item.getPriority());
-//        this.init();
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+    }//GEN-LAST:event_cboMetaActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         this.doClose(DialogResult.CANCEL);
@@ -1003,76 +1014,65 @@ public class PriorityForm extends ZombieDialog {
         final Object sel = this.cboAttributes.getSelectedItem();
         if(sel == null || !(sel instanceof PriorityAttributeComboBoxItem)) {
             this.selectedAttributeItem = null;
-            this.taken.put(TAKEN_ATTR, null);
             this.lblSelectedAttributes.setText("<None Yet>");
             return;
         }
         
         final PriorityAttributeComboBoxItem item = (PriorityAttributeComboBoxItem)sel;
         this.selectedAttributeItem = item;
-        this.taken.put(TAKEN_ATTR, item.getPriority());
         this.lblSelectedAttributes.setText(item.getPriority().getName() + " - " + item.getPriority().getAttributes());
-//        this.init();
     }//GEN-LAST:event_cboAttributesActionPerformed
 
     private void cboMagicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboMagicActionPerformed
         final Object sel = this.cboMagic.getSelectedItem();
         if(sel == null || !(sel instanceof PriorityMagicComboBoxItem)) {
             this.selectedMagicItem = null;
-            this.taken.put(TAKEN_MAGIC, null);
             return;
         }
         
         final PriorityMagicComboBoxItem item = (PriorityMagicComboBoxItem)sel;
         this.selectedMagicItem = item;
-        this.taken.put(TAKEN_MAGIC, item.getPriority());
         this.displaySelectedMagic();
     }//GEN-LAST:event_cboMagicActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+    private void cmdOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdOKActionPerformed
         this.doClose(DialogResult.OK);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_cmdOKActionPerformed
 
     private void cboSkillsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboSkillsActionPerformed
-        // TODO add your handling code here:
         final Object sel = this.cboSkills.getSelectedItem();
         if(sel == null || !(sel instanceof PrioritySkillComboBoxItem)) {
             this.selectedSkillsItem = null;
-            this.taken.put(TAKEN_SKILLS, null);
             this.lblSelectedSkills.setText("<None Yet>");
             return;
         }
         
         final PrioritySkillComboBoxItem item = (PrioritySkillComboBoxItem)sel;
         this.selectedSkillsItem = item;
-        this.taken.put(TAKEN_SKILLS, item.getPriority());
         this.lblSelectedSkills.setText(item.getPriority().getName() + " - " + item.getSkillPoints() + " / " + item.getSkillgroupPoints() );
     }//GEN-LAST:event_cboSkillsActionPerformed
 
     private void cboResourcesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboResourcesActionPerformed
         final Object sel = this.cboResources.getSelectedItem();
-        if(sel == null || !(sel instanceof PriorityResourcelComboBoxItem)) {
+        if(sel == null || !(sel instanceof PriorityResourceComboBoxItem)) {
             this.selectedResourceItem = null;
-            this.taken.put(TAKEN_RESS, null);
             this.lblSelectedResources.setText("<None Yet>");
             return;
         }
         
-        final PriorityResourcelComboBoxItem item = (PriorityResourcelComboBoxItem)sel;
+        final PriorityResourceComboBoxItem item = (PriorityResourceComboBoxItem)sel;
         this.selectedResourceItem = item;
-        this.taken.put(TAKEN_RESS, item.getPriority());
         this.lblSelectedResources.setText(String.format("%s - %d \u00A5", new Object[] { item.getPriority().getName(), item.getResources()}));
     }//GEN-LAST:event_cboResourcesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cboAttributes;
     private javax.swing.JComboBox cboMagic;
+    private javax.swing.JComboBox cboMeta;
     private javax.swing.JComboBox cboResources;
     private javax.swing.JComboBox cboSkills;
+    private javax.swing.JButton cmdOK;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

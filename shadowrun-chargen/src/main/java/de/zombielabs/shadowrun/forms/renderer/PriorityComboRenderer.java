@@ -7,6 +7,7 @@
 package de.zombielabs.shadowrun.forms.renderer;
 
 import de.zombielabs.shadowrun.forms.data.ComboBoxItem;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -29,10 +30,11 @@ public class PriorityComboRenderer extends javax.swing.plaf.basic.BasicComboBoxR
         
         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if(!cbo.isAvailable()) {
-            Font temp = c.getFont();
-            Map m = temp.getAttributes();
-            m.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-            c.setFont(new Font(m));
+//            Font temp = c.getFont();
+//            Map m = temp.getAttributes();
+//            m.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+//            c.setFont(new Font(m));
+            c.setBackground(Color.GRAY);
         }
         
         return c;

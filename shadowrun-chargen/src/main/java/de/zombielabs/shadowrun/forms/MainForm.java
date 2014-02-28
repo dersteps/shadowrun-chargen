@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -44,6 +47,16 @@ public class MainForm extends javax.swing.JFrame {
     
     private List<Perk> characterPerks = new ArrayList<Perk>();
     private List<Flaw> characterFlaws = new ArrayList<Flaw>();
+    
+    
+    /**
+     * Limits as per selected prios
+     */
+    private int attributePoints = 0;
+    
+    
+    
+    
     /**
      * Creates new form MainForm
      * @param splash the loading screen to close after initialization
@@ -120,6 +133,18 @@ public class MainForm extends javax.swing.JFrame {
                 }
             }
         });
+        
+        ///TODO: Make sure the max amount of attribute points is not exceeded
+        ChangeListener listener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                final JSpinner source = (JSpinner)e.getSource();
+                attributePoints -= (Integer)txtKON.getValue();
+                System.out.println("Attribute points: " + attributePoints);
+                
+            }
+        };
+
+        txtKON.addChangeListener(listener);
         
 //         list.addListSelectionListener(new ListSelectionListener(){  
 //      public void valueChanged(ListSelectionEvent lse){  
@@ -1348,8 +1373,13 @@ public class MainForm extends javax.swing.JFrame {
         p.takeControl();
         
         if(p.getResult().equals(DialogResult.OK)) {
+            
+            this.attributePoints = p.getSelectedAttributeItem().getAttributePoints();
+            
+            
             this.lblPrioMeta.setText(p.getSelectedMetaItem().getPriority().getName());
             this.lblPrioAttributes.setText(p.getSelectedAttributeItem().getPriority().getName());
+            
             this.lblPrioMagic.setText(p.getSelectedMagicItem().getPriority().getName());
             this.lblPrioSkills.setText(p.getSelectedSkillsItem().getPriority().getName());
             this.lblPrioResources.setText(p.getSelectedResourceItem().getPriority().getName());
@@ -1443,7 +1473,6 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
         if(this.listCharacterEdgesFlaws.getSelectedValue() != null) {
             DefaultListModel dlm = (DefaultListModel)this.listCharacterEdgesFlaws.getModel();
             final Object sel = this.listCharacterEdgesFlaws.getSelectedValue();

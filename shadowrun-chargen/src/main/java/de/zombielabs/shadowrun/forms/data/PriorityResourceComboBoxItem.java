@@ -13,42 +13,41 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PrioritySkillComboBoxItem extends PriorityComboBoxItem  {
-    private int skillPoints = 0;
-    private int skillgroupPoints = 0;
+public class PriorityResourceComboBoxItem extends PriorityComboBoxItem  {
+    private int resources = 0;
 
     public int getSkillPoints() {
-        return skillPoints;
+        return resources;
     }
 
     public void setSkillPoints(int skillPoints) {
-        this.skillPoints = skillPoints;
+        this.resources = skillPoints;
     }
 
-    public int getSkillgroupPoints() {
-        return skillgroupPoints;
+    public int getResources() {
+        return resources;
     }
 
-    public void setSkillgroupPoints(int skillgroupPoints) {
-        this.skillgroupPoints = skillgroupPoints;
+    public void setResources(int resources) {
+        this.resources = resources;
     }
     
-    public PrioritySkillComboBoxItem(Priority prio) {
+
+    public PriorityResourceComboBoxItem(Priority prio) {
         super(prio);
-        this.skillPoints = prio.getSkillpoints();
-        this.skillgroupPoints = prio.getSkillgroupPoints();
+        this.resources = prio.getResources();
     }
     
     @Override
     public String toString() {
-        return this.getPriority().getName() + " - " + this.skillPoints + "/" + this.skillgroupPoints;
+        return String.format("%s - %d \u00A5", new Object[] { this.getPriority().getName(), this.resources} );
     }
 
     @Override
     public boolean equals(Object obj) {
         if(obj == null) { return false; }
-        if(!(obj instanceof PrioritySkillComboBoxItem)) { return false; }
-        final PrioritySkillComboBoxItem that = (PrioritySkillComboBoxItem)obj;
+        if(!(obj instanceof PriorityResourceComboBoxItem)) { return false; }
+        final PriorityResourceComboBoxItem that = (PriorityResourceComboBoxItem)obj;
         if(that.toString() == null && this.toString() != null) { return false; }
         if(this.toString() == null && that.toString() != null) { return false; }
         

@@ -20,6 +20,4 @@ public class ComboBoxItem {
     public void setAvailable(boolean available) {
         this.available = available;
     }
-    
-    
 }
