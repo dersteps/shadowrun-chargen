@@ -13,7 +13,8 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PrioritySkillComboBoxItem extends PriorityComboBoxItem  {
+public class PrioritySkillComboBoxItem extends ComboBoxItem  {
+    private Priority priority;
     private int skillPoints = 0;
     private int skillgroupPoints = 0;
 
@@ -33,15 +34,23 @@ public class PrioritySkillComboBoxItem extends PriorityComboBoxItem  {
         this.skillgroupPoints = skillgroupPoints;
     }
     
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
     public PrioritySkillComboBoxItem(Priority prio) {
-        super(prio);
+        this.priority = prio;
         this.skillPoints = prio.getSkillpoints();
         this.skillgroupPoints = prio.getSkillgroupPoints();
     }
     
     @Override
     public String toString() {
-        return this.getPriority().getName() + " - " + this.skillPoints + "/" + this.skillgroupPoints;
+        return this.priority.getName() + " - " + this.skillPoints + "/" + this.skillgroupPoints;
     }
 
     @Override

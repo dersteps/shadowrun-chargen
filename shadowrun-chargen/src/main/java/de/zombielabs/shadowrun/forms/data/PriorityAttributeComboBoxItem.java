@@ -13,8 +13,17 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PriorityAttributeComboBoxItem extends PriorityComboBoxItem  {
+public class PriorityAttributeComboBoxItem extends ComboBoxItem  {
+    private Priority priority;
     private int attributePoints = 0;
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
 
     public int getAttributePoints() {
         return attributePoints;
@@ -25,13 +34,13 @@ public class PriorityAttributeComboBoxItem extends PriorityComboBoxItem  {
     }
 
     public PriorityAttributeComboBoxItem(Priority prio) {
-        super(prio);
+        this.priority = prio;
         this.attributePoints = prio.getAttributes();
     }
     
     @Override
     public String toString() {
-        return this.getPriority().getName() + " - " + this.attributePoints + "  Attribute Points to spend";
+        return this.priority.getName() + " - " + this.attributePoints + "  Attribute Points to spend";
     }
 
     @Override

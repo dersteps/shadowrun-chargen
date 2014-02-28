@@ -13,9 +13,18 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
+public class PriorityMetatypeComboBoxItem extends ComboBoxItem {
+    private Priority priority;
     private Metatype meta;
     private int specialPoints = 0;
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
 
     public Metatype getMeta() {
         return meta;
@@ -33,8 +42,8 @@ public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
         this.specialPoints = specialPoints;
     }
 
-    public PriorityMetatypeComboBoxItem(Priority priority, Metatype meta, int special, boolean available) {
-        super(priority);
+    public PriorityMetatypeComboBoxItem(Priority prio, Metatype meta, int special, boolean available) {
+        this.priority = prio;
         this.meta = meta;
         this.specialPoints = special;
         this.setAvailable(available);
@@ -42,7 +51,7 @@ public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
     
     @Override
     public String toString() {
-        return this.getPriority().getName() + " - " + this.meta.getName() + " ("  + this.specialPoints + ")";
+        return this.priority.getName() + " - " + this.meta.getName() + " ("  + this.specialPoints + ")";
     }
     
     @Override
@@ -52,6 +61,8 @@ public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
         final PriorityMetatypeComboBoxItem that = (PriorityMetatypeComboBoxItem)obj;
         if(that.toString() == null && this.toString() != null) { return false; }
         if(this.toString() == null && that.toString() != null) { return false; }
+        System.out.println("Comparing meta item " + this.toString() + " to " + that.toString());
+        System.out.println("Is same: " + this.toString().equals(that.toString()));
         return this.toString().equals(that.toString());
     }
 }

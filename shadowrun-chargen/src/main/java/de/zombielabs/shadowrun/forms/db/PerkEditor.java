@@ -301,6 +301,7 @@ public class PerkEditor extends ZombieDialog {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void cmdCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCloseActionPerformed
+        // TODO add your handling code here:
         this.doClose(DialogResult.OK);
     }//GEN-LAST:event_cmdCloseActionPerformed
 
@@ -312,6 +313,7 @@ public class PerkEditor extends ZombieDialog {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
         if(this.edited == null || this.newPerk) { return; }
         
         String q = "DELETE FROM perks WHERE id = " + this.edited.getId();

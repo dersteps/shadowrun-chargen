@@ -1219,6 +1219,7 @@ public class PrioritiesEditor extends ZombieDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
         Priority newPrio = new Priority();
         newPrio.setName("New Priority");
         DefaultComboBoxModel model = (DefaultComboBoxModel)this.cboPriority.getModel();
@@ -1363,6 +1364,8 @@ public class PrioritiesEditor extends ZombieDialog {
         } else {
             this.saveAsNew();
         }
+        // TODO add your handling code here:
+        
     }//GEN-LAST:event_jButton2ActionPerformed
 
 
@@ -1577,6 +1580,7 @@ public class PrioritiesEditor extends ZombieDialog {
     }//GEN-LAST:event_cboPriorityActionPerformed
 
     private void cmdDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdDeleteActionPerformed
+        // TODO add your handling code here:
         if(this.edited == null) {
             return;
         }
