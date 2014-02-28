@@ -11,6 +11,12 @@ import de.zombielabs.shadowrun.common.data.Flaw;
 import de.zombielabs.shadowrun.common.data.Perk;
 import de.zombielabs.shadowrun.common.data.gear.Drug;
 import de.zombielabs.shadowrun.common.data.gear.Toxin;
+import de.zombielabs.shadowrun.forms.data.PriorityAttributeComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityMagicComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityMetatypeComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PriorityResourceComboBoxItem;
+import de.zombielabs.shadowrun.forms.data.PrioritySkillComboBoxItem;
 import de.zombielabs.shadowrun.forms.db.FlawEditor;
 import de.zombielabs.shadowrun.forms.db.MetatypesEditor;
 import de.zombielabs.shadowrun.forms.db.PerkEditor;
@@ -20,13 +26,19 @@ import de.zombielabs.shadowrun.forms.renderer.EdgeFlawListRenderer;
 import de.zombielabs.shadowrun.forms.renderer.GearNode;
 import de.zombielabs.shadowrun.forms.renderer.GearTreeRenderer;
 import java.awt.Color;
+import java.awt.Component;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,18 +52,38 @@ public class MainForm extends javax.swing.JFrame {
 
     private final Splash splash;
     
-    private DataProvider data;
+    private final DataProvider data;
     
-    private List<Perk> characterPerks = new ArrayList<Perk>();
-    private List<Flaw> characterFlaws = new ArrayList<Flaw>();
+    private final List<Perk> characterPerks = new ArrayList<Perk>();
+    private final List<Flaw> characterFlaws = new ArrayList<Flaw>();
+    
+    private static final String PRIO_META = "METATYPE";
+    private static final String PRIO_ATTR = "ATTRIBUTES";
+    private static final String PRIO_MAGIC = "MAGIC";
+    private static final String PRIO_SKILLS = "SKILLS";
+    private static final String PRIO_RESS = "RESOURCES";
+    
+    private final HashMap<String, PriorityComboBoxItem> priorities;
+    
+    /**
+     * Limits as per selected prios
+     */
+    private int attributePoints = 0;
+    
+    
+    
+    
     /**
      * Creates new form MainForm
      * @param splash the loading screen to close after initialization
+     * @param data an instance of DataProvider that provides the data
      */
     public MainForm(Splash splash, DataProvider data) {
        initComponents();
+       this.disableForm();
        this.splash = splash;
        this.data = data;
+       this.priorities = new HashMap<String, PriorityComboBoxItem>();
     }
     
     public void takeControl() {
@@ -121,6 +153,18 @@ public class MainForm extends javax.swing.JFrame {
             }
         });
         
+        ///TODO: Make sure the max amount of attribute points is not exceeded
+        ChangeListener listener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                final JSpinner source = (JSpinner)e.getSource();
+                attributePoints -= (Integer)txtKON.getValue();
+                System.out.println("Attribute points: " + attributePoints);
+                
+            }
+        };
+
+        txtKON.addChangeListener(listener);
+        
 //         list.addListSelectionListener(new ListSelectionListener(){  
 //      public void valueChanged(ListSelectionEvent lse){  
 //        if(lse.getValueIsAdjusting() == false) list.setCellRenderer(new MyRenderer());}});//reset  
@@ -180,6 +224,33 @@ public class MainForm extends javax.swing.JFrame {
         
     }
     
+    private void disableForm() {
+        this.updateFormEnabled(false, null);
+    }
+    
+    private void enableForm() {
+        this.updateFormEnabled(true, null);
+    }
+    
+    private void updateFormEnabled(boolean enable, JComponent comp) {
+        if(comp == null) {
+            comp = this.splitMain;
+        }
+        
+        comp.setEnabled(enable);
+        
+        final Component[] subs = comp.getComponents();
+        if(subs != null && subs.length > 0) {
+            for(final Component sub : comp.getComponents()) {
+                sub.setEnabled(false);
+                if(sub instanceof JComponent) {
+                    final JComponent jsub = (JComponent)sub;
+                    updateFormEnabled(enable, jsub);
+                }
+            }
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -192,7 +263,7 @@ public class MainForm extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
-        jSplitPane1 = new javax.swing.JSplitPane();
+        splitMain = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -363,7 +434,7 @@ public class MainForm extends javax.swing.JFrame {
         });
         jToolBar1.add(jButton1);
 
-        jSplitPane1.setDividerLocation(250);
+        splitMain.setDividerLocation(250);
 
         jLabel1.setText(bundle.getString("MainForm.jLabel1.text")); // NOI18N
 
@@ -643,7 +714,7 @@ public class MainForm extends javax.swing.JFrame {
 
         jTabbedPane1.addTab(bundle.getString("MainForm.jPanel2.TabConstraints.tabTitle"), jPanel2); // NOI18N
 
-        jSplitPane1.setLeftComponent(jTabbedPane1);
+        splitMain.setLeftComponent(jTabbedPane1);
 
         jLabel24.setText(bundle.getString("MainForm.jLabel24.text")); // NOI18N
 
@@ -1279,7 +1350,7 @@ public class MainForm extends javax.swing.JFrame {
 
         jTabbedPane2.addTab(bundle.getString("MainForm.jPanel23.TabConstraints.tabTitle"), jPanel23); // NOI18N
 
-        jSplitPane1.setRightComponent(jTabbedPane2);
+        splitMain.setRightComponent(jTabbedPane2);
 
         jMenu1.setText(bundle.getString("MainForm.jMenu1.text")); // NOI18N
         jMenuBar1.add(jMenu1);
@@ -1328,14 +1399,14 @@ public class MainForm extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jSplitPane1)
+            .addComponent(splitMain)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1)
+                .addComponent(splitMain)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1345,11 +1416,29 @@ public class MainForm extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         PriorityForm p = new PriorityForm(this, true, this.data);
+        
+        p.setSelectedAttributeItem((PriorityAttributeComboBoxItem)this.priorities.get(PRIO_ATTR));
+        p.setSelectedMagicItem((PriorityMagicComboBoxItem)this.priorities.get(PRIO_MAGIC));
+        p.setSelectedMetaItem((PriorityMetatypeComboBoxItem)this.priorities.get(PRIO_META));
+        p.setSelectedResourceItem((PriorityResourceComboBoxItem)this.priorities.get(PRIO_RESS));
+        p.setSelectedSkillsItem((PrioritySkillComboBoxItem)this.priorities.get(PRIO_SKILLS));
+        
         p.takeControl();
         
         if(p.getResult().equals(DialogResult.OK)) {
+            
+            this.priorities.put(PRIO_META, p.getSelectedMetaItem());
+            this.priorities.put(PRIO_ATTR, p.getSelectedAttributeItem());
+            this.priorities.put(PRIO_MAGIC, p.getSelectedMagicItem());
+            this.priorities.put(PRIO_SKILLS, p.getSelectedSkillsItem());
+            this.priorities.put(PRIO_RESS, p.getSelectedResourceItem());
+            
+            this.attributePoints = p.getSelectedAttributeItem().getAttributePoints();
+            
+            
             this.lblPrioMeta.setText(p.getSelectedMetaItem().getPriority().getName());
             this.lblPrioAttributes.setText(p.getSelectedAttributeItem().getPriority().getName());
+            
             this.lblPrioMagic.setText(p.getSelectedMagicItem().getPriority().getName());
             this.lblPrioSkills.setText(p.getSelectedSkillsItem().getPriority().getName());
             this.lblPrioResources.setText(p.getSelectedResourceItem().getPriority().getName());
@@ -1389,6 +1478,8 @@ public class MainForm extends javax.swing.JFrame {
             this.txtEDG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeMax(), 1));
             this.txtMAG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicMax(), 1));
             this.txtRES.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceMax(), 1));
+            
+            this.enableForm();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -1443,7 +1534,6 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
         if(this.listCharacterEdgesFlaws.getSelectedValue() != null) {
             DefaultListModel dlm = (DefaultListModel)this.listCharacterEdgesFlaws.getModel();
             final Object sel = this.listCharacterEdgesFlaws.getSelectedValue();
@@ -1575,7 +1665,6 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
@@ -1613,6 +1702,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JList listCharacterEdgesFlaws;
     private javax.swing.JList listFlaws;
     private javax.swing.JList listPerks;
+    private javax.swing.JSplitPane splitMain;
     private javax.swing.JTabbedPane tabPerksFlaws;
     private javax.swing.JSpinner txtCHA;
     private javax.swing.JTextField txtCharAlias;

@@ -13,32 +13,41 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PriorityAttributeComboBoxItem extends PriorityComboBoxItem  {
-    private int attributePoints = 0;
+public class PriorityResourceComboBoxItem extends PriorityComboBoxItem  {
+    private int resources = 0;
 
-    public int getAttributePoints() {
-        return attributePoints;
+    public int getSkillPoints() {
+        return resources;
     }
 
-    public void setAttributePoints(int attributePoints) {
-        this.attributePoints = attributePoints;
+    public void setSkillPoints(int skillPoints) {
+        this.resources = skillPoints;
     }
 
-    public PriorityAttributeComboBoxItem(Priority prio) {
+    public int getResources() {
+        return resources;
+    }
+
+    public void setResources(int resources) {
+        this.resources = resources;
+    }
+    
+
+    public PriorityResourceComboBoxItem(Priority prio) {
         super(prio);
-        this.attributePoints = prio.getAttributes();
+        this.resources = prio.getResources();
     }
     
     @Override
     public String toString() {
-        return this.getPriority().getName() + " - " + this.attributePoints + "  Attribute Points to spend";
+        return String.format("%s - %d \u00A5", new Object[] { this.getPriority().getName(), this.resources} );
     }
 
     @Override
     public boolean equals(Object obj) {
         if(obj == null) { return false; }
-        if(!(obj instanceof PriorityAttributeComboBoxItem)) { return false; }
-        final PriorityAttributeComboBoxItem that = (PriorityAttributeComboBoxItem)obj;
+        if(!(obj instanceof PriorityResourceComboBoxItem)) { return false; }
+        final PriorityResourceComboBoxItem that = (PriorityResourceComboBoxItem)obj;
         if(that.toString() == null && this.toString() != null) { return false; }
         if(this.toString() == null && that.toString() != null) { return false; }
         

@@ -13,18 +13,9 @@ import de.zombielabs.shadowrun.common.data.Priority;
  *
  * @author Steps
  */
-public class PriorityMetatypeComboBoxItem extends ComboBoxItem {
-    private Priority priority;
+public class PriorityMetatypeComboBoxItem extends PriorityComboBoxItem {
     private Metatype meta;
     private int specialPoints = 0;
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
 
     public Metatype getMeta() {
         return meta;
@@ -43,7 +34,7 @@ public class PriorityMetatypeComboBoxItem extends ComboBoxItem {
     }
 
     public PriorityMetatypeComboBoxItem(Priority prio, Metatype meta, int special, boolean available) {
-        this.priority = prio;
+        super(prio);
         this.meta = meta;
         this.specialPoints = special;
         this.setAvailable(available);
@@ -51,7 +42,7 @@ public class PriorityMetatypeComboBoxItem extends ComboBoxItem {
     
     @Override
     public String toString() {
-        return this.priority.getName() + " - " + this.meta.getName() + " ("  + this.specialPoints + ")";
+        return this.getPriority().getName() + " - " + this.meta.getName() + " ("  + this.specialPoints + ")";
     }
     
     @Override

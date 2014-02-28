@@ -13,8 +13,7 @@ import java.util.HashMap;
  *
  * @author Steps
  */
-public class PriorityMagicComboBoxItem extends ComboBoxItem  {
-    private Priority priority;
+public class PriorityMagicComboBoxItem extends PriorityComboBoxItem  {
     private Mages type = null;
     
     private int ratingMAG = 0;
@@ -29,10 +28,6 @@ public class PriorityMagicComboBoxItem extends ComboBoxItem  {
     private int ratingSkillsRES = 0;
     private int spells = 0;
     private int forms = 0;
-
-    public Priority getPriority() {
-        return priority;
-    }
 
     public Mages getType() {
         return type;
@@ -91,74 +86,74 @@ public class PriorityMagicComboBoxItem extends ComboBoxItem  {
     private void init() {
         switch(this.type) {
             case MAGE: {
-                this.ratingMAG = this.priority.getMagicMage();
-                this.ratingRES = this.priority.getResonanceMage();
-                this.skillsMAG = this.priority.getMagicSkillsMage();
-                this.ratingSkillsMAG = this.priority.getRatingMagicSkillsMage();
-                this.activeSkills = this.priority.getActiveSkillsMage();
-                this.ratingActiveSkills = this.priority.getRatingActiveSkillsMage();
-                this.skillgroupsMAG = this.priority.getMagicSkillgroupsMage();
-                this.ratingSkillgroupsMAG = this.priority.getRatingMagicSkillgroupsMage();
-                this.skillsRES = this.priority.getResonanceSkillsMage();
-                this.ratingSkillsRES = this.priority.getRatingResonanceSkillsMage();
-                this.spells = this.priority.getSpellsMage();
-                this.forms = this.priority.getFormsMage();
+                this.ratingMAG = this.getPriority().getMagicMage();
+                this.ratingRES = this.getPriority().getResonanceMage();
+                this.skillsMAG = this.getPriority().getMagicSkillsMage();
+                this.ratingSkillsMAG = this.getPriority().getRatingMagicSkillsMage();
+                this.activeSkills = this.getPriority().getActiveSkillsMage();
+                this.ratingActiveSkills = this.getPriority().getRatingActiveSkillsMage();
+                this.skillgroupsMAG = this.getPriority().getMagicSkillgroupsMage();
+                this.ratingSkillgroupsMAG = this.getPriority().getRatingMagicSkillgroupsMage();
+                this.skillsRES = this.getPriority().getResonanceSkillsMage();
+                this.ratingSkillsRES = this.getPriority().getRatingResonanceSkillsMage();
+                this.spells = this.getPriority().getSpellsMage();
+                this.forms = this.getPriority().getFormsMage();
                 break;
             } case ADEPT: {
-                this.ratingMAG = this.priority.getMagicAdept();
-                this.ratingRES = this.priority.getResonanceAdept();
-                this.skillsMAG = this.priority.getMagicSkillsAdept();
-                this.ratingSkillsMAG = this.priority.getRatingMagicSkillsAdept();
-                this.activeSkills = this.priority.getActiveSkillsAdept();
-                this.ratingActiveSkills = this.priority.getRatingActiveSkillsAdept();
-                this.skillgroupsMAG = this.priority.getMagicSkillgroupsAdept();
-                this.ratingSkillgroupsMAG = this.priority.getRatingMagicSkillgroupsAdept();
-                this.skillsRES = this.priority.getResonanceSkillsAdept();
-                this.ratingSkillsRES = this.priority.getRatingResonanceSkillsAdept();
-                this.spells = this.priority.getSpellsAdept();
-                this.forms = this.priority.getFormsAdept();
+                this.ratingMAG = this.getPriority().getMagicAdept();
+                this.ratingRES = this.getPriority().getResonanceAdept();
+                this.skillsMAG = this.getPriority().getMagicSkillsAdept();
+                this.ratingSkillsMAG = this.getPriority().getRatingMagicSkillsAdept();
+                this.activeSkills = this.getPriority().getActiveSkillsAdept();
+                this.ratingActiveSkills = this.getPriority().getRatingActiveSkillsAdept();
+                this.skillgroupsMAG = this.getPriority().getMagicSkillgroupsAdept();
+                this.ratingSkillgroupsMAG = this.getPriority().getRatingMagicSkillgroupsAdept();
+                this.skillsRES = this.getPriority().getResonanceSkillsAdept();
+                this.ratingSkillsRES = this.getPriority().getRatingResonanceSkillsAdept();
+                this.spells = this.getPriority().getSpellsAdept();
+                this.forms = this.getPriority().getFormsAdept();
                 break;
             } case MAGEADEPT: {
-                this.ratingMAG = this.priority.getMagicMageAdept();
-                this.ratingRES = this.priority.getResonanceMageAdept();
-                this.skillsMAG = this.priority.getMagicSkillsMageAdept();
-                this.ratingSkillsMAG = this.priority.getRatingMagicSkillsMageAdept();
-                this.activeSkills = this.priority.getActiveSkillsMageAdept();
-                this.ratingActiveSkills = this.priority.getRatingActiveSkillsMageAdept();
-                this.skillgroupsMAG = this.priority.getMagicSkillgroupsMageAdept();
-                this.ratingSkillgroupsMAG = this.priority.getRatingMagicSkillgroupsMageAdept();
-                this.skillsRES = this.priority.getResonanceSkillsMageAdept();
-                this.ratingSkillsRES = this.priority.getRatingResonanceSkillsMageAdept();
-                this.spells = this.priority.getSpellsMageAdept();
-                this.forms = this.priority.getFormsMageAdept();
+                this.ratingMAG = this.getPriority().getMagicMageAdept();
+                this.ratingRES = this.getPriority().getResonanceMageAdept();
+                this.skillsMAG = this.getPriority().getMagicSkillsMageAdept();
+                this.ratingSkillsMAG = this.getPriority().getRatingMagicSkillsMageAdept();
+                this.activeSkills = this.getPriority().getActiveSkillsMageAdept();
+                this.ratingActiveSkills = this.getPriority().getRatingActiveSkillsMageAdept();
+                this.skillgroupsMAG = this.getPriority().getMagicSkillgroupsMageAdept();
+                this.ratingSkillgroupsMAG = this.getPriority().getRatingMagicSkillgroupsMageAdept();
+                this.skillsRES = this.getPriority().getResonanceSkillsMageAdept();
+                this.ratingSkillsRES = this.getPriority().getRatingResonanceSkillsMageAdept();
+                this.spells = this.getPriority().getSpellsMageAdept();
+                this.forms = this.getPriority().getFormsMageAdept();
                 break;
             } case ASPECTMAGE: {
-                this.ratingMAG = this.priority.getMagicAspectMage();
-                this.ratingRES = this.priority.getResonanceAspectMage();
-                this.skillsMAG = this.priority.getMagicSkillsAspectMage();
-                this.ratingSkillsMAG = this.priority.getRatingMagicSkillsAspectMage();
-                this.activeSkills = this.priority.getActiveSkillsAspectMage();
-                this.ratingActiveSkills = this.priority.getRatingActiveSkillsAspectMage();
-                this.skillgroupsMAG = this.priority.getMagicSkillgroupsAspectMage();
-                this.ratingSkillgroupsMAG = this.priority.getRatingMagicSkillgroupsAspectMage();
-                this.skillsRES = this.priority.getResonanceSkillsAspectMage();
-                this.ratingSkillsRES = this.priority.getRatingResonanceSkillsAspectMage();
-                this.spells = this.priority.getSpellsAspectMage();
-                this.forms = this.priority.getFormsAspectMage();
+                this.ratingMAG = this.getPriority().getMagicAspectMage();
+                this.ratingRES = this.getPriority().getResonanceAspectMage();
+                this.skillsMAG = this.getPriority().getMagicSkillsAspectMage();
+                this.ratingSkillsMAG = this.getPriority().getRatingMagicSkillsAspectMage();
+                this.activeSkills = this.getPriority().getActiveSkillsAspectMage();
+                this.ratingActiveSkills = this.getPriority().getRatingActiveSkillsAspectMage();
+                this.skillgroupsMAG = this.getPriority().getMagicSkillgroupsAspectMage();
+                this.ratingSkillgroupsMAG = this.getPriority().getRatingMagicSkillgroupsAspectMage();
+                this.skillsRES = this.getPriority().getResonanceSkillsAspectMage();
+                this.ratingSkillsRES = this.getPriority().getRatingResonanceSkillsAspectMage();
+                this.spells = this.getPriority().getSpellsAspectMage();
+                this.forms = this.getPriority().getFormsAspectMage();
                 break;
             } case TECHNOMANCER: {
-                this.ratingMAG = this.priority.getMagicTechnomancer();
-                this.ratingRES = this.priority.getResonanceTechnomancer();
-                this.skillsMAG = this.priority.getMagicSkillsTechnomancer();
-                this.ratingSkillsMAG = this.priority.getRatingMagicSkillsTechnomancer();
-                this.activeSkills = this.priority.getActiveSkillsTechnomancer();
-                this.ratingActiveSkills = this.priority.getRatingActiveSkillsTechnomancer();
-                this.skillgroupsMAG = this.priority.getMagicSkillgroupsTechnomancer();
-                this.ratingSkillgroupsMAG = this.priority.getRatingMagicSkillgroupsTechnomancer();
-                this.skillsRES = this.priority.getResonanceSkillsTechnomancer();
-                this.ratingSkillsRES = this.priority.getRatingResonanceSkillsTechnomancer();
-                this.spells = this.priority.getSpellsTechnomancer();
-                this.forms = this.priority.getFormsTechnomancer();
+                this.ratingMAG = this.getPriority().getMagicTechnomancer();
+                this.ratingRES = this.getPriority().getResonanceTechnomancer();
+                this.skillsMAG = this.getPriority().getMagicSkillsTechnomancer();
+                this.ratingSkillsMAG = this.getPriority().getRatingMagicSkillsTechnomancer();
+                this.activeSkills = this.getPriority().getActiveSkillsTechnomancer();
+                this.ratingActiveSkills = this.getPriority().getRatingActiveSkillsTechnomancer();
+                this.skillgroupsMAG = this.getPriority().getMagicSkillgroupsTechnomancer();
+                this.ratingSkillgroupsMAG = this.getPriority().getRatingMagicSkillgroupsTechnomancer();
+                this.skillsRES = this.getPriority().getResonanceSkillsTechnomancer();
+                this.ratingSkillsRES = this.getPriority().getRatingResonanceSkillsTechnomancer();
+                this.spells = this.getPriority().getSpellsTechnomancer();
+                this.forms = this.getPriority().getFormsTechnomancer();
                 break;
             } default: {
                 this.ratingMAG = 0;
@@ -179,7 +174,7 @@ public class PriorityMagicComboBoxItem extends ComboBoxItem  {
     }
 
     public PriorityMagicComboBoxItem(Mages type, Priority prio) {
-        this.priority = prio;
+        super(prio);
         this.type = type;
         this.init();
     }
@@ -188,7 +183,7 @@ public class PriorityMagicComboBoxItem extends ComboBoxItem  {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         
-        sb.append(this.priority.getName()).append(" - ");
+        sb.append(this.getPriority().getName()).append(" - ");
         sb.append(Mages.getName(type));
         sb.append(" (");
         
