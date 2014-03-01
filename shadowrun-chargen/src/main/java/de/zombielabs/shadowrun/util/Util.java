@@ -7,6 +7,12 @@
 package de.zombielabs.shadowrun.util;
 
 import java.awt.Color;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSpinner;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultFormatter;
 
 /**
  *
@@ -36,4 +42,25 @@ public class Util {
 
         return new Color((int) r, (int) g, (int) b, (int) a);
     }
+    
+    public static void injectChangeListener(final JSpinner spinner, ChangeListener listener) {
+        final JComponent comp = spinner.getEditor();
+        final JFormattedTextField field = (JFormattedTextField)comp.getComponent(0);
+        final DefaultFormatter formatter = (DefaultFormatter)field.getFormatter();
+        formatter.setCommitsOnValidEdit(true);
+        spinner.addChangeListener(listener);
+    }
+    
+    /*final JSpinner spinner = new JSpinner();
+    JComponent comp = spinner.getEditor();
+    JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+    DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+    formatter.setCommitsOnValidEdit(true);
+    spinner.addChangeListener(new ChangeListener() {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            LOG.info("value changed: " + spinner.getValue());
+        }
+    });*/
 }

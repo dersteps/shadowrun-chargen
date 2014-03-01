@@ -1,16 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package de.zombielabs.shadowrun.forms;
 
 import de.zombielabs.shadowrun.common.data.DataProvider;
 import de.zombielabs.shadowrun.common.data.Flaw;
 import de.zombielabs.shadowrun.common.data.Perk;
+import de.zombielabs.shadowrun.common.data.Priority;
 import de.zombielabs.shadowrun.common.data.gear.Drug;
 import de.zombielabs.shadowrun.common.data.gear.Toxin;
+import de.zombielabs.shadowrun.forms.data.Mages;
 import de.zombielabs.shadowrun.forms.data.PriorityAttributeComboBoxItem;
 import de.zombielabs.shadowrun.forms.data.PriorityComboBoxItem;
 import de.zombielabs.shadowrun.forms.data.PriorityMagicComboBoxItem;
@@ -25,36 +21,39 @@ import de.zombielabs.shadowrun.forms.renderer.Category;
 import de.zombielabs.shadowrun.forms.renderer.EdgeFlawListRenderer;
 import de.zombielabs.shadowrun.forms.renderer.GearNode;
 import de.zombielabs.shadowrun.forms.renderer.GearTreeRenderer;
+import de.zombielabs.shadowrun.util.JListAppender;
+import de.zombielabs.shadowrun.util.LabelAnimationListener;
+import de.zombielabs.shadowrun.util.PriorityUtil;
 import de.zombielabs.shadowrun.util.Util;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.apache.log4j.Appender;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Steps
  */
 public class MainForm extends javax.swing.JFrame {
-
+    
+    private static final Logger log = LogManager.getLogger(MainForm.class);
+    
     private final Splash splash;
     
     private final DataProvider data;
@@ -70,13 +69,70 @@ public class MainForm extends javax.swing.JFrame {
     
     private final HashMap<String, PriorityComboBoxItem> priorities;
     
+    private final HashMap<JLabel, LabelAnimationListener> animListeners;
+    
+    private final ChangeListener attributeChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            
+            final int spent = calcSpentAttributePoints();
+            final PriorityAttributeComboBoxItem item = (PriorityAttributeComboBoxItem)priorities.get(PRIO_ATTR);
+            
+            if(spent >= item.getAttributePoints()) {
+                if(e.getSource() instanceof JSpinner) {
+                    final JSpinner sender = (JSpinner)e.getSource();
+                    ((JSpinner.DefaultEditor)sender.getEditor()).getTextField().setBackground(Color.red);
+                }
+                System.out.println("TOO MANY");
+            }
+            
+            log.debug("Spent " + spent + " points");
+            //System.out.println("Spent " + calcSpentAttributePoints() + " points");
+        }
+    };
+    
+    private int calcSpentAttributePoints() {
+        int spent = 0;
+        
+        final PriorityMetatypeComboBoxItem item = (PriorityMetatypeComboBoxItem)this.priorities.get(PRIO_META);
+        final int konDefault = item.getMeta().getBodyDefault();
+        final int gesDefault = item.getMeta().getDexterityDefault();
+        final int reaDefault = item.getMeta().getReactionDefault();
+        final int strDefault = item.getMeta().getStrengthDefault();
+        final int chaDefault = item.getMeta().getCharismaDefault();
+        final int intDefault = item.getMeta().getIntuitionDefault();
+        final int wilDefault = item.getMeta().getWillpowerDefault();
+        final int logDefault = item.getMeta().getLogicDefault();
+        
+        final int currKon = (Integer)this.txtKON.getValue();
+        final int currGes = (Integer)this.txtGES.getValue();
+        final int currRea = (Integer)this.txtREA.getValue();
+        final int currStr = (Integer)this.txtSTR.getValue();
+        final int currCha = (Integer)this.txtCHA.getValue();
+        final int currInt = (Integer)this.txtINT.getValue();
+        final int currWil = (Integer)this.txtWIL.getValue();
+        final int currLog = (Integer)this.txtLOG.getValue();
+        
+        final int deltaKON = currKon - konDefault;
+        final int deltaGES = currGes - gesDefault;
+        final int deltaREA = currRea - reaDefault;
+        final int deltaSTR = currStr - strDefault;
+        final int deltaCHA = currCha - chaDefault;
+        final int deltaINT = currInt - intDefault;
+        final int deltaWIL = currWil - wilDefault;
+        final int deltaLOG = currLog - logDefault;
+        
+        spent = deltaKON + deltaGES + deltaREA + deltaSTR + deltaCHA + deltaINT + deltaWIL + deltaLOG;
+        
+        
+        
+        return spent;
+    }
+    
     /**
      * Limits as per selected prios
      */
     private int attributePoints = 0;
-    
-    
-    
     
     /**
      * Creates new form MainForm
@@ -86,10 +142,26 @@ public class MainForm extends javax.swing.JFrame {
     public MainForm(Splash splash, DataProvider data) {
        initComponents();
        this.jPanel3.setBackground(Util.blend(jPanel3.getBackground(), Color.red, 1f));
-       this.disableForm();
+//       this.disableForm();
        this.splash = splash;
        this.data = data;
        this.priorities = new HashMap<String, PriorityComboBoxItem>();
+
+       JListAppender la = new JListAppender();
+       la.setList(listLog);
+       log.addAppender(la);
+              
+       Util.injectChangeListener(txtKON, this.attributeChangeListener);
+       Util.injectChangeListener(txtGES, this.attributeChangeListener);
+       Util.injectChangeListener(txtSTR, this.attributeChangeListener);
+       Util.injectChangeListener(txtREA, this.attributeChangeListener);
+       Util.injectChangeListener(txtCHA, this.attributeChangeListener);
+       Util.injectChangeListener(txtINT, this.attributeChangeListener);
+       Util.injectChangeListener(txtWIL, this.attributeChangeListener);
+       Util.injectChangeListener(txtLOG, this.attributeChangeListener);
+    
+       this.animListeners = new HashMap<JLabel, LabelAnimationListener>();
+       
     }
     
     public void takeControl() {
@@ -159,33 +231,6 @@ public class MainForm extends javax.swing.JFrame {
             }
         });
         
-        ///TODO: Make sure the max amount of attribute points is not exceeded
-        ChangeListener listener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                final JSpinner source = (JSpinner)e.getSource();
-                attributePoints -= (Integer)txtKON.getValue();
-                System.out.println("Attribute points: " + attributePoints);
-                
-            }
-        };
-
-        txtKON.addChangeListener(listener);
-        
-//         list.addListSelectionListener(new ListSelectionListener(){  
-//      public void valueChanged(ListSelectionEvent lse){  
-//        if(lse.getValueIsAdjusting() == false) list.setCellRenderer(new MyRenderer());}});//reset  
-//        /*//this block comes from this recent post, and would be better 
-//          //http://www.coderanch.com/t/336056/GUI/java/Force-ListCellRenderer-update-GUI 
-//          //comment out the above reset line, and uncomment this block 
-//        if(lse.getValueIsAdjusting() == false) 
-//        { 
-//          for(int x = 0; x < listModel.size(); x++) 
-//          { 
-//            listModel.setElementAt(listModel.getElementAt(x),x); 
-//          } 
-//        }}}); 
-//        */  
-//  }  
         
     }
     
@@ -410,6 +455,8 @@ public class MainForm extends javax.swing.JFrame {
         jTextArea2 = new javax.swing.JTextArea();
         jScrollPane7 = new javax.swing.JScrollPane();
         jTextArea3 = new javax.swing.JTextArea();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        listLog = new javax.swing.JList();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -789,7 +836,7 @@ public class MainForm extends javax.swing.JFrame {
                     .addComponent(txtCharName)
                     .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jFormattedTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(465, Short.MAX_VALUE))
+                .addContainerGap(475, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -810,7 +857,7 @@ public class MainForm extends javax.swing.JFrame {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel28, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(388, Short.MAX_VALUE))
+                .addContainerGap(386, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab(bundle.getString("MainForm.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
@@ -1103,7 +1150,7 @@ public class MainForm extends javax.swing.JFrame {
                     .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(527, Short.MAX_VALUE))
+                .addContainerGap(537, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1132,7 +1179,7 @@ public class MainForm extends javax.swing.JFrame {
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(207, Short.MAX_VALUE))
+                .addContainerGap(205, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab(bundle.getString("MainForm.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
@@ -1243,7 +1290,7 @@ public class MainForm extends javax.swing.JFrame {
             .addGroup(jPanel20Layout.createSequentialGroup()
                 .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE))
         );
         jPanel20Layout.setVerticalGroup(
             jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1284,7 +1331,7 @@ public class MainForm extends javax.swing.JFrame {
                         .addGroup(jPanel24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel24Layout.createSequentialGroup()
                                 .addComponent(lblEdgeFlawKarma, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 545, Short.MAX_VALUE))
+                                .addGap(0, 550, Short.MAX_VALUE))
                             .addComponent(jScrollPane4)))
                     .addComponent(jLabel35))
                 .addContainerGap())
@@ -1361,14 +1408,26 @@ public class MainForm extends javax.swing.JFrame {
         jPanel23.setLayout(jPanel23Layout);
         jPanel23Layout.setHorizontalGroup(
             jPanel23Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE)
+            .addComponent(jSplitPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 784, Short.MAX_VALUE)
         );
         jPanel23Layout.setVerticalGroup(
             jPanel23Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+            .addComponent(jSplitPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab(bundle.getString("MainForm.jPanel23.TabConstraints.tabTitle"), jPanel23); // NOI18N
+
+        jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane8.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        listLog.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane8.setViewportView(listLog);
+
+        jTabbedPane2.addTab(bundle.getString("MainForm.jScrollPane8.TabConstraints.tabTitle"), new javax.swing.ImageIcon(getClass().getResource("/de/zombielabs/shadowrun/icons/table.png")), jScrollPane8); // NOI18N
 
         splitMain.setRightComponent(jTabbedPane2);
 
@@ -1434,6 +1493,47 @@ public class MainForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void applyPriorities() {
+        
+        // Set in util class for cleaner code
+        
+        
+        this.attributePoints = PriorityUtil.getAttributePoints();
+        this.lblAttributes.setText(this.attributePoints+"");
+        this.lblPrioMeta.setText(PriorityUtil.getMetaPriorityName());
+        this.lblPrioAttributes.setText(PriorityUtil.getAttributePriorityName());
+        this.lblPrioMagic.setText(PriorityUtil.getMagicPriorityName());
+        this.lblPrioSkills.setText(PriorityUtil.getSkillPriorityName());
+        this.lblPrioResources.setText(PriorityUtil.getResourcePriorityName());
+        this.lblSelectedMeta.setText(PriorityUtil.getMetaName());
+        this.lblKON.setText(PriorityUtil.getDefaultKONString());
+        this.lblGES.setText(PriorityUtil.getDefaultGESString());
+        this.lblREA.setText(PriorityUtil.getDefaultREAString());
+        this.lblSTR.setText(PriorityUtil.getDefaultSTRString());
+        this.lblCHA.setText(PriorityUtil.getDefaultCHAString());
+        this.lblINT.setText(PriorityUtil.getDefaultINTString());
+        this.lblLOG.setText(PriorityUtil.getDefaultLOGString());
+        this.lblWIL.setText(PriorityUtil.getDefaultWILString());
+        this.lblEDG.setText(PriorityUtil.getDefaultEDGString());
+        this.lblMAG.setText(PriorityUtil.getRatingMAG());
+        this.lblRES.setText(PriorityUtil.getRatingRES());
+        this.lblSkills.setText(PriorityUtil.getSkillPoints() + " Punkte");
+        this.lblSkillgroups.setText(PriorityUtil.getSkillGroupPoints() + " Punkte");
+        this.lblResources.setText(PriorityUtil.getResourceString());
+        this.txtKON.setModel(PriorityUtil.getKONModel());
+        this.txtGES.setModel(PriorityUtil.getGESModel());
+        
+        this.txtREA.setModel(PriorityUtil.getREAModel());
+        this.txtSTR.setModel(PriorityUtil.getSTRModel());
+        this.txtCHA.setModel(PriorityUtil.getCHAModel());
+        this.txtINT.setModel(PriorityUtil.getINTModel());
+        this.txtLOG.setModel(PriorityUtil.getLOGModel());
+        this.txtWIL.setModel(PriorityUtil.getWILModel());
+        this.txtEDG.setModel(PriorityUtil.getEDGModel());
+        this.txtMAG.setModel(PriorityUtil.getMAGModel());
+        this.txtRES.setModel(PriorityUtil.getRESModel());
+    }
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         PriorityForm p = new PriorityForm(this, true, this.data);
         
@@ -1453,52 +1553,59 @@ public class MainForm extends javax.swing.JFrame {
             this.priorities.put(PRIO_SKILLS, p.getSelectedSkillsItem());
             this.priorities.put(PRIO_RESS, p.getSelectedResourceItem());
             
-            this.attributePoints = p.getSelectedAttributeItem().getAttributePoints();
+            PriorityUtil.setAttributePriority(p.getSelectedAttributeItem());
+            PriorityUtil.setMagicPriority(p.getSelectedMagicItem());
+            PriorityUtil.setMetaPriority(p.getSelectedMetaItem());
+            PriorityUtil.setResourcePriority(p.getSelectedResourceItem());
+            PriorityUtil.setSkillPriority(p.getSelectedSkillsItem());
             
-            
-            this.lblPrioMeta.setText(p.getSelectedMetaItem().getPriority().getName());
-            this.lblPrioAttributes.setText(p.getSelectedAttributeItem().getPriority().getName());
-            
-            this.lblPrioMagic.setText(p.getSelectedMagicItem().getPriority().getName());
-            this.lblPrioSkills.setText(p.getSelectedSkillsItem().getPriority().getName());
-            this.lblPrioResources.setText(p.getSelectedResourceItem().getPriority().getName());
-            
-            this.lblSelectedMeta.setText(p.getSelectedMetaItem().getMeta().getName());
-            
-            this.lblKON.setText(p.getSelectedMetaItem().getMeta().getBodyDefault() + " / " + p.getSelectedMetaItem().getMeta().getBodyMax());
-            this.lblGES.setText(p.getSelectedMetaItem().getMeta().getDexterityDefault() + " / " + p.getSelectedMetaItem().getMeta().getDexterityMax());
-            this.lblREA.setText(p.getSelectedMetaItem().getMeta().getReactionDefault() + " / " + p.getSelectedMetaItem().getMeta().getReactionMax());
-            this.lblSTR.setText(p.getSelectedMetaItem().getMeta().getStrengthDefault() + " / " + p.getSelectedMetaItem().getMeta().getStrengthMax());
-            
-            this.lblCHA.setText(p.getSelectedMetaItem().getMeta().getCharismaDefault() + " / " + p.getSelectedMetaItem().getMeta().getCharismaMax());
-            this.lblINT.setText(p.getSelectedMetaItem().getMeta().getIntuitionDefault() + " / " + p.getSelectedMetaItem().getMeta().getIntuitionMax());
-            this.lblLOG.setText(p.getSelectedMetaItem().getMeta().getLogicDefault() + " / " + p.getSelectedMetaItem().getMeta().getLogicMax());
-            this.lblWIL.setText(p.getSelectedMetaItem().getMeta().getWillpowerDefault() + " / " + p.getSelectedMetaItem().getMeta().getWillpowerMax());
-            
-            this.lblEDG.setText(p.getSelectedMetaItem().getMeta().getEdgeDefault() + " / " + p.getSelectedMetaItem().getMeta().getEdgeMax());
-            
-            this.lblMAG.setText(p.getSelectedMagicItem().getRatingMAG()+"");
-            this.lblRES.setText(p.getSelectedMagicItem().getRatingRES()+"");
-            
-            this.lblAttributes.setText(p.getSelectedAttributeItem().getAttributePoints() + " Punkte");
-            this.lblSkills.setText(p.getSelectedSkillsItem().getSkillPoints() + " Punkte");
-            this.lblSkillgroups.setText(p.getSelectedSkillsItem().getSkillgroupPoints() + " Punkte");
-            this.lblResources.setText(String.format("%d \u00A5", new Object[] { p.getSelectedResourceItem().getResources() }));
-            
-            this.txtKON.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getBodyDefault(), p.getSelectedMetaItem().getMeta().getBodyDefault(), p.getSelectedMetaItem().getMeta().getBodyMax(), 1));
-            this.txtGES.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getDexterityDefault(), p.getSelectedMetaItem().getMeta().getDexterityDefault(), p.getSelectedMetaItem().getMeta().getDexterityMax(), 1));
-            this.txtREA.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getReactionDefault(), p.getSelectedMetaItem().getMeta().getReactionDefault(), p.getSelectedMetaItem().getMeta().getReactionMax(), 1));
-            this.txtSTR.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getStrengthDefault(), p.getSelectedMetaItem().getMeta().getStrengthDefault(), p.getSelectedMetaItem().getMeta().getStrengthMax(), 1));
-            
-            this.txtCHA.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getCharismaDefault(), p.getSelectedMetaItem().getMeta().getCharismaDefault(), p.getSelectedMetaItem().getMeta().getCharismaMax(), 1));
-            this.txtINT.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getIntuitionDefault(), p.getSelectedMetaItem().getMeta().getIntuitionDefault(), p.getSelectedMetaItem().getMeta().getIntuitionMax(), 1));
-            this.txtLOG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getLogicDefault(), p.getSelectedMetaItem().getMeta().getLogicDefault(), p.getSelectedMetaItem().getMeta().getLogicMax(), 1));
-            this.txtWIL.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getWillpowerDefault(), p.getSelectedMetaItem().getMeta().getWillpowerDefault(), p.getSelectedMetaItem().getMeta().getWillpowerMax(), 1));
-            
-            this.txtEDG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeMax(), 1));
-            this.txtMAG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicMax(), 1));
-            this.txtRES.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceMax(), 1));
-            
+            this.applyPriorities();
+//            this.attributePoints = p.getSelectedAttributeItem().getAttributePoints();
+//            
+//            
+//            this.lblPrioMeta.setText(p.getSelectedMetaItem().getPriority().getName());
+//            this.lblPrioAttributes.setText(p.getSelectedAttributeItem().getPriority().getName());
+//            
+//            this.lblPrioMagic.setText(p.getSelectedMagicItem().getPriority().getName());
+//            this.lblPrioSkills.setText(p.getSelectedSkillsItem().getPriority().getName());
+//            this.lblPrioResources.setText(p.getSelectedResourceItem().getPriority().getName());
+//            
+//            this.lblSelectedMeta.setText(p.getSelectedMetaItem().getMeta().getName());
+//            
+//            this.lblKON.setText(p.getSelectedMetaItem().getMeta().getBodyDefault() + " / " + p.getSelectedMetaItem().getMeta().getBodyMax());
+//            this.lblGES.setText(p.getSelectedMetaItem().getMeta().getDexterityDefault() + " / " + p.getSelectedMetaItem().getMeta().getDexterityMax());
+//            this.lblREA.setText(p.getSelectedMetaItem().getMeta().getReactionDefault() + " / " + p.getSelectedMetaItem().getMeta().getReactionMax());
+//            this.lblSTR.setText(p.getSelectedMetaItem().getMeta().getStrengthDefault() + " / " + p.getSelectedMetaItem().getMeta().getStrengthMax());
+//            
+//            this.lblCHA.setText(p.getSelectedMetaItem().getMeta().getCharismaDefault() + " / " + p.getSelectedMetaItem().getMeta().getCharismaMax());
+//            this.lblINT.setText(p.getSelectedMetaItem().getMeta().getIntuitionDefault() + " / " + p.getSelectedMetaItem().getMeta().getIntuitionMax());
+//            this.lblLOG.setText(p.getSelectedMetaItem().getMeta().getLogicDefault() + " / " + p.getSelectedMetaItem().getMeta().getLogicMax());
+//            this.lblWIL.setText(p.getSelectedMetaItem().getMeta().getWillpowerDefault() + " / " + p.getSelectedMetaItem().getMeta().getWillpowerMax());
+//            
+//            this.lblEDG.setText(p.getSelectedMetaItem().getMeta().getEdgeDefault() + " / " + p.getSelectedMetaItem().getMeta().getEdgeMax());
+//            
+//            this.lblMAG.setText(p.getSelectedMagicItem().getRatingMAG()+"");
+//            this.lblRES.setText(p.getSelectedMagicItem().getRatingRES()+"");
+//            
+//            this.lblAttributes.setText(p.getSelectedAttributeItem().getAttributePoints() + " Punkte");
+//            this.lblSkills.setText(p.getSelectedSkillsItem().getSkillPoints() + " Punkte");
+//            this.lblSkillgroups.setText(p.getSelectedSkillsItem().getSkillgroupPoints() + " Punkte");
+//            this.lblResources.setText(String.format("%d \u00A5", new Object[] { p.getSelectedResourceItem().getResources() }));
+//            
+//            this.txtKON.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getBodyDefault(), p.getSelectedMetaItem().getMeta().getBodyDefault(), p.getSelectedMetaItem().getMeta().getBodyMax(), 1));
+//            this.txtGES.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getDexterityDefault(), p.getSelectedMetaItem().getMeta().getDexterityDefault(), p.getSelectedMetaItem().getMeta().getDexterityMax(), 1));
+//            this.txtREA.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getReactionDefault(), p.getSelectedMetaItem().getMeta().getReactionDefault(), p.getSelectedMetaItem().getMeta().getReactionMax(), 1));
+//            this.txtSTR.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getStrengthDefault(), p.getSelectedMetaItem().getMeta().getStrengthDefault(), p.getSelectedMetaItem().getMeta().getStrengthMax(), 1));
+//            
+//            this.txtCHA.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getCharismaDefault(), p.getSelectedMetaItem().getMeta().getCharismaDefault(), p.getSelectedMetaItem().getMeta().getCharismaMax(), 1));
+//            this.txtINT.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getIntuitionDefault(), p.getSelectedMetaItem().getMeta().getIntuitionDefault(), p.getSelectedMetaItem().getMeta().getIntuitionMax(), 1));
+//            this.txtLOG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getLogicDefault(), p.getSelectedMetaItem().getMeta().getLogicDefault(), p.getSelectedMetaItem().getMeta().getLogicMax(), 1));
+//            this.txtWIL.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getWillpowerDefault(), p.getSelectedMetaItem().getMeta().getWillpowerDefault(), p.getSelectedMetaItem().getMeta().getWillpowerMax(), 1));
+//            
+//            this.txtEDG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeDefault(), p.getSelectedMetaItem().getMeta().getEdgeMax(), 1));
+//            this.txtMAG.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicDefault(), p.getSelectedMetaItem().getMeta().getMagicMax(), 1));
+//            this.txtRES.setModel(new SpinnerNumberModel(p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceDefault(), p.getSelectedMetaItem().getMeta().getResonanceMax(), 1));
+//            
             this.enableForm();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -1548,7 +1655,7 @@ public class MainForm extends javax.swing.JFrame {
                 this.data.reloadPerks();
                 this.loadPerksAndFlaws();
             } catch (SQLException ex) {
-                Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace(System.err);
             }
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
@@ -1579,7 +1686,7 @@ public class MainForm extends javax.swing.JFrame {
                 this.data.reloadFlaws();
                 this.loadPerksAndFlaws();
             } catch (SQLException ex) {
-                Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace(System.err);
             }
         }
     }//GEN-LAST:event_jMenuItem3ActionPerformed
@@ -1590,9 +1697,26 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-       
+        List<Priority> p = this.data.getPriorities();
         
+        PriorityAttributeComboBoxItem a = new PriorityAttributeComboBoxItem(p.get(0));
+        PriorityMagicComboBoxItem b = new PriorityMagicComboBoxItem(Mages.MAGE, p.get(1));
+        PriorityMetatypeComboBoxItem c = new PriorityMetatypeComboBoxItem(p.get(2), this.data.getMetatypes().get(0), 5, true );
+        PriorityResourceComboBoxItem d = new PriorityResourceComboBoxItem(p.get(3));
+        PrioritySkillComboBoxItem e = new PrioritySkillComboBoxItem(p.get(4));
+        this.priorities.put(PRIO_ATTR, a);
+        this.priorities.put(PRIO_MAGIC, b);
+        this.priorities.put(PRIO_META, c);
+        this.priorities.put(PRIO_RESS, d);
+        this.priorities.put(PRIO_SKILLS, e);
         
+        PriorityUtil.setAttributePriority(a);
+        PriorityUtil.setMagicPriority(b);
+        PriorityUtil.setMetaPriority(c);
+        PriorityUtil.setResourcePriority(d);
+        PriorityUtil.setSkillPriority(e);
+        
+        this.applyPriorities();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1691,6 +1815,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
@@ -1728,6 +1853,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel lblWIL;
     private javax.swing.JList listCharacterEdgesFlaws;
     private javax.swing.JList listFlaws;
+    private javax.swing.JList listLog;
     private javax.swing.JList listPerks;
     private javax.swing.JSplitPane splitMain;
     private javax.swing.JTabbedPane tabPerksFlaws;
