@@ -7,6 +7,7 @@ import de.zombielabs.shadowrun.common.data.Availability;
 import de.zombielabs.shadowrun.common.data.Flaw;
 import de.zombielabs.shadowrun.common.data.Metatype;
 import de.zombielabs.shadowrun.common.data.Perk;
+import de.zombielabs.shadowrun.common.data.Rules;
 import de.zombielabs.shadowrun.common.data.Skill;
 import de.zombielabs.shadowrun.common.data.Skillgroup;
 import de.zombielabs.shadowrun.common.data.gear.Drug;
@@ -49,6 +50,7 @@ public class V5SQLDataProvider extends DataProvider {
             this.flaws = this.loadFlaws();
             this.toxins = this.loadToxins();
             this.drugs = this.loadDrugs();
+            this.rules = this.loadRules();
             this.onLoadingFinished();
         } catch (Exception ex) {
             this.onLoadingFailed(ex);
@@ -435,6 +437,35 @@ public class V5SQLDataProvider extends DataProvider {
         this.connection = null;
         return list;
     }
+
+   
+    
+    private Rules loadRules() throws SQLException {
+        final String query = "SELECT * FROM rules";
+        this.ensureConnection();
+        Statement s = this.connection.createStatement();
+        final ResultSet rs = s.executeQuery(query);
+        
+        Rules r = new Rules();
+        while(rs.next()) {
+            
+            final String colName = rs.getString("name");
+            
+            switch(colName) {
+                case "karma": {
+                    r.setDefaultKarma(rs.getInt("val")); break;
+                } case "knowledge_multiplier": {
+                    r.setKnowledgeMultiplier(rs.getFloat("val")); break;
+                } case "language_multiplier": {
+                    r.setLanguageMultiplier(rs.getFloat("val")); break;
+                }
+            }
+        }
+        
+        return r;
+    }
+    
+    
     
     private void ensureConnection() throws SQLException {
         if(this.connection == null) {
@@ -450,6 +481,8 @@ public class V5SQLDataProvider extends DataProvider {
             System.exit(666);
         }
     }
+    
+    
 
     @Override
     public void reloadAttributes() throws SQLException {
@@ -496,6 +529,10 @@ public class V5SQLDataProvider extends DataProvider {
         this.drugs = this.loadDrugs();
     }
 
+     @Override
+    public void reloadRules() throws SQLException {
+        this.rules = this.loadRules();
+    }
     
 
     

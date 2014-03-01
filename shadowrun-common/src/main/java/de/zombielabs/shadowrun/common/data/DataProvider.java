@@ -28,6 +28,8 @@ public abstract class DataProvider {
     protected List<Toxin> toxins = null;
     protected List<Drug> drugs = null;
     
+    protected Rules rules = null;
+    
     private List<DataProviderListener> listeners = new ArrayList<DataProviderListener>();
     
     public void addListener(DataProviderListener listener) {
@@ -71,6 +73,11 @@ public abstract class DataProvider {
     public List<Toxin> getToxins() {
         return toxins;
     }
+
+    public Rules getRules() {
+        return rules;
+    }
+    
     
     
 
@@ -151,6 +158,7 @@ public abstract class DataProvider {
     public abstract void reloadPriorities() throws SQLException;
     public abstract void reloadSkills() throws SQLException;
     public abstract void reloadSkillgroups() throws SQLException;
+    public abstract void reloadRules() throws SQLException;
     
     public abstract boolean update(String sql) throws SQLException;
     
